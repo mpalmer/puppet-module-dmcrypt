@@ -1,0 +1,16 @@
+#             THIS FILE IS AUTOMATICALLY DISTRIBUTED BY PUPPET.
+#                  ANY LOCAL CHANGES WILL BE OVERWRITTEN!
+
+DMCRYPT_DEVICE_NAME="<%= @dmcrypt_device_name %>"
+DMCRYPT_DEVICE_DEV="<%= @dmcrypt_device_device %>"
+<% if @dmcrypt_device_vg -%>
+DMCRYPT_DEVICE_VG="<%= @dmcrypt_device_vg %>"
+<% end -%>
+<% unless @dmcrypt_device_mountpoints.empty? -%>
+declare -a DMCRYPT_DEVICE_MOUNT_DEVICES
+declare -A DMCRYPT_DEVICE_MOUNT_POINTS
+<%   @dmcrypt_device_mountpoints.each do |dev, loc| -%>
+DMCRYPT_DEVICE_MOUNT_DEVICES+=("<%= dev %>")
+DMCRYPT_DEVICE_MOUNT_POINTS[<%= dev %>]="<%= loc %>"
+<%   end -%>
+<% end -%>

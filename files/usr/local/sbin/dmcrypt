@@ -1,0 +1,94 @@
+#!/bin/bash
+
+set -e
+
+dmcrypt_usage() {
+	local error="$1"
+
+	if [ -n "$error" ]; then
+		echo "dmcrypt error: $error" >&2
+		echo "" >&2
+	fi
+	
+	cat <<-EOF >&2
+Usage:
+   dmcrypt <open|close|init> <device>
+EOF
+fi
+
+dmcrypt_init() {
+	local name="$1"
+	
+	echo "Formatting '$DMCRYPT_DEVICE_DEV' for LUKS"
+	cryptsetup luksFormat "$DMCRYPT_DEVICE_DEV"
+}
+
+dmcrypt_open() {
+	local name="$1"
+	
+	echo "Opening '$DMCRYPT_DEVICE_DEV' (to create /dev/mapper/${DMCRYPT_DEVICE_NAME}-decrypted)"
+	cryptsetup luksOpen "$DMCRYPT_DEVICE_DEV" "${DMCRYPT_DEVICE_NAME}-decrypted"
+
+	if [ ! -b "/dev/mapper/${DMCRYPT_DEVICE_NAME}-decrypted" ]; then
+		echo "ERROR: decrypted device does not exist.  I don't know WTF happened." >&2
+		exit 1
+	fi
+	
+	if [ -n "$DMCRYPT_DEVICE_VG_NAME" ]; then
+		echo "Activating LVM volume group '${DMCRYPT_DEVICE_VG_NAME}'"
+		vgchange -ay "$DMCRYPT_DEVICE_VG_NAME"
+	fi
+	
+	for dev in "${DMCRYPT_DEVICE_MOUNT_DEVICES[@]}"; do
+		if [ -b "$dev" ]; then
+			echo "Mounting '${dev}' on '${DMCRYPT_DEVICE_MOUNT_POINTS[$dev]}'"
+			mount -t auto $dev "${DMCRYPT_DEVICE_MOUNT_POINTS[$dev]}"
+		else
+			echo "Not mounting '${dev}', it does not exist (perhaps you need to create it first?)"
+		fi
+	done
+}
+
+dmcrypt_close() {
+	local name="$1"
+	
+	for dev in "${DMCRYPT_DEVICE_MOUNT_DEVICES[@]}"; do
+		if [ -b "$dev" ]; then
+			echo "Unmounting '$dev'"
+			umount $dev
+		fi
+	done
+	
+	if [ -n "$DMCRYPT_DEVICE_VG_NAME" ];then
+		echo "Deactivating LVM volume group '${DMCRYPT_DEVICE_VG_NAME}'"
+		vgchange -an "$DMCRYPT_DEVICE_VG_NAME"
+	fi
+	
+	echo "Closing LUKS volume"
+	cryptsetup luksClose "${DMCRYPT_DEVICE_NAME}-decrypted"
+}
+
+if [ "$#" != "2" ]; then
+	usage "Invalid arguments"
+	exit 1
+fi
+
+if ! [ -e "/etc/dmcrypt/devices/$2" ]; then
+	usage "device not found: $2"
+	exit 1
+fi
+
+. "/etc/dmcrypt/devices/$2"
+
+case "$1" in
+	init)
+		dmcrypt_init "$2";;
+	open)
+		dmcrypt_open "$2";;
+	close)
+		dmcrypt_close "$2";;
+	-h|--help|help)
+		dmcrypt_usage; exit 0;;
+	*)
+		dmcrypt_usage "Invalid arguments"; exit 1;;
+esac
