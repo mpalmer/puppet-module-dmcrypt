@@ -53,7 +53,7 @@ dmcrypt_close() {
 	local name="$1"
 	
 	for dev in "${DMCRYPT_DEVICE_MOUNT_DEVICES[@]}"; do
-		if [ -b "$dev" ]; then
+		if mount | grep -qF "$dev"; then
 			echo "Unmounting '$dev'"
 			umount $dev
 		fi
