@@ -3,8 +3,8 @@
 
 DMCRYPT_DEVICE_NAME="<%= @dmcrypt_device_name %>"
 DMCRYPT_DEVICE_DEV="<%= @dmcrypt_device_device %>"
-<% if @dmcrypt_device_vg -%>
-DMCRYPT_DEVICE_VG="<%= @dmcrypt_device_vg %>"
+<% if @dmcrypt_device_vg_name -%>
+DMCRYPT_DEVICE_VG_NAME="<%= @dmcrypt_device_vg_name %>"
 <% end -%>
 <% unless @dmcrypt_device_mounts.empty? -%>
 declare -a DMCRYPT_DEVICE_MOUNT_DEVICES
