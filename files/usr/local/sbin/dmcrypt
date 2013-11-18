@@ -41,8 +41,8 @@ dmcrypt_open() {
 	
 	for dev in "${DMCRYPT_DEVICE_MOUNT_DEVICES[@]}"; do
 		if [ -b "$dev" ]; then
-			echo "Mounting '${dev}' on '${DMCRYPT_DEVICE_MOUNT_POINTS[$dev]}'"
-			mount -t auto $dev "${DMCRYPT_DEVICE_MOUNT_POINTS[$dev]}"
+			echo "Mounting '${dev}' on '${DMCRYPT_DEVICE_MOUNTS[$dev]}'"
+			mount -t auto $dev "${DMCRYPT_DEVICE_MOUNTS[$dev]}"
 		else
 			echo "Not mounting '${dev}', it does not exist (perhaps you need to create it first?)"
 		fi

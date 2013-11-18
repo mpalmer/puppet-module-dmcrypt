@@ -9,8 +9,8 @@ DMCRYPT_DEVICE_VG="<%= @dmcrypt_device_vg %>"
 <% unless @dmcrypt_device_mountpoints.empty? -%>
 declare -a DMCRYPT_DEVICE_MOUNT_DEVICES
 declare -A DMCRYPT_DEVICE_MOUNT_POINTS
-<%   @dmcrypt_device_mountpoints.each do |dev, loc| -%>
+<%   @dmcrypt_device_mounts.each do |dev, loc| -%>
 DMCRYPT_DEVICE_MOUNT_DEVICES+=("<%= dev %>")
-DMCRYPT_DEVICE_MOUNT_POINTS[<%= dev %>]="<%= loc %>"
+DMCRYPT_DEVICE_MOUNTS[<%= dev %>]="<%= loc %>"
 <%   end -%>
 <% end -%>
