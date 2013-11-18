@@ -14,7 +14,7 @@ dmcrypt_usage() {
 Usage:
    dmcrypt <open|close|init> <device>
 EOF
-fi
+}
 
 dmcrypt_init() {
 	local name="$1"
