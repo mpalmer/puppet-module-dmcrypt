@@ -16,9 +16,23 @@ Usage:
 EOF
 }
 
+dmcrypt_list() {
+	for i in /etc/dmcrypt/devices/*; do
+		. "$i"
+		echo -e "${DMCRYPT_DEVICE_NAME}\t${DMCRYPT_DEVICE_DEV}"
+	done
+}
+
 dmcrypt_init() {
 	local name="$1"
 	
+	if ! [ -e "/etc/dmcrypt/devices/$name" ]; then
+		dmcrypt_usage "device not found: $name"
+		exit 1
+	fi
+
+	. "/etc/dmcrypt/devices/$name"
+
 	echo "Formatting '$DMCRYPT_DEVICE_DEV' for LUKS"
 	cryptsetup luksFormat "$DMCRYPT_DEVICE_DEV"
 }
@@ -26,6 +40,13 @@ dmcrypt_init() {
 dmcrypt_open() {
 	local name="$1"
 	
+	if ! [ -e "/etc/dmcrypt/devices/$name" ]; then
+		dmcrypt_usage "device not found: $name"
+		exit 1
+	fi
+
+	. "/etc/dmcrypt/devices/$name"
+
 	echo "Opening '$DMCRYPT_DEVICE_DEV' (to create /dev/mapper/${DMCRYPT_DEVICE_NAME}-decrypted)"
 	cryptsetup luksOpen "$DMCRYPT_DEVICE_DEV" "${DMCRYPT_DEVICE_NAME}-decrypted"
 
@@ -52,6 +73,13 @@ dmcrypt_open() {
 dmcrypt_close() {
 	local name="$1"
 	
+	if ! [ -e "/etc/dmcrypt/devices/$name" ]; then
+		dmcrypt_usage "device not found: $name"
+		exit 1
+	fi
+
+	. "/etc/dmcrypt/devices/$name"
+
 	for dev in "${DMCRYPT_DEVICE_MOUNT_DEVICES[@]}"; do
 		if mount | grep -qF "$dev"; then
 			echo "Unmounting '$dev'"
@@ -68,18 +96,6 @@ dmcrypt_close() {
 	cryptsetup luksClose "${DMCRYPT_DEVICE_NAME}-decrypted"
 }
 
-if [ "$#" != "2" ]; then
-	dmcrypt_usage "Invalid arguments"
-	exit 1
-fi
-
-if ! [ -e "/etc/dmcrypt/devices/$2" ]; then
-	dmcrypt_usage "device not found: $2"
-	exit 1
-fi
-
-. "/etc/dmcrypt/devices/$2"
-
 case "$1" in
 	init)
 		dmcrypt_init "$2";;
@@ -87,6 +103,8 @@ case "$1" in
 		dmcrypt_open "$2";;
 	close)
 		dmcrypt_close "$2";;
+	list|ls)
+		dmcrypt_list;;
 	-h|--help|help)
 		dmcrypt_usage; exit 0;;
 	*)
