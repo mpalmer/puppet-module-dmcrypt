@@ -69,12 +69,12 @@ dmcrypt_close() {
 }
 
 if [ "$#" != "2" ]; then
-	usage "Invalid arguments"
+	dmcrypt_usage "Invalid arguments"
 	exit 1
 fi
 
 if ! [ -e "/etc/dmcrypt/devices/$2" ]; then
-	usage "device not found: $2"
+	dmcrypt_usage "device not found: $2"
 	exit 1
 fi
 
