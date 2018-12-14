@@ -31,7 +31,7 @@ define dmcrypt::device($device,
 	
 	file { "/etc/dmcrypt/devices/${name}":
 		content => template("dmcrypt/etc/dmcrypt/devices"),
-		mode    => 0440,
+		mode    => "0440",
 		owner   => "root",
 		group   => "root";
 	}
